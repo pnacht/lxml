@@ -25,7 +25,10 @@ jobs:
       run: sudo apt-get update -y -q && sudo apt-get install -y -q "libxml2=2.9.13*" "libxml2-dev=2.9.13*" libxslt1.1 libxslt1-dev
 
     - name: Install Python dependencies
-      run: python -m pip install -U pip setuptools && python -m pip install -U docutils pygments sphinx sphinx-rtd-theme -r requirements.txt
+      run: |
+        python -m pip install -U -r tools/ci-deps/requirements-infra.txt --require-hashes
+        python -m pip install -U -r tools/ci-deps/requirements-docs.txt --require-hashes
+        python -m pip install -U -r tools/ci-deps/requirements-ci.txt --require-hashes
 
     - name: Build docs and sdist
       run: make html sdist
@@ -116,7 +119,7 @@ jobs:
         python-version: "3.x"
 
     - name: Install dependencies
-      run: python -m pip install -r requirements.txt
+      run: python -m pip install -r tools/ci-deps/requirements-ci.txt --require-hashes
 
     - name: Cache [libs]
       uses: actions/cache@v3
@@ -167,7 +170,12 @@ jobs:
     permissions:
       contents: write
 
-    env: { LIBXML2_VERSION: 2.10.4, LIBXSLT_VERSION: 1.1.38, MACOSX_DEPLOYMENT_TARGET: 11.0 }
+    env: 
+      LIBXML2_VERSION: "2.10.4"
+      LIBXSLT_VERSION: 1.1.38
+      MACOSX_DEPLOYMENT_TARGET: 11.0
+      REQUIREMENTS_DIR: ${{ (matrix.python-version == '2.7' || matrix.python-version == '3.6') && 'ci-deps-eol' || 'ci-deps' }}
+      REQUIREMENTS_SUFFIX: ${{ matrix.python-version == '3.6' && '-py36' || '' }}
 
     steps:
     - uses: actions/checkout@v3
@@ -184,7 +192,24 @@ jobs:
         ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize
 
     - name: Install dependencies
-      run: python -m pip install setuptools wheel -r requirements.txt
+      run: |
+        case "$PYTHON_VERSION" in
+          2.7 | 3.6)
+            REQUIREMENTS_DIR="tools/ci-deps-eol"
+            REQUIREMENTS_SUFFIX="-py2"
+          ;;
+          3.6)
+            REQUIREMENTS_DIR="tools/ci-deps-eol"
+            REQUIREMENTS_SUFFIX="-py36"
+          ;;
+          *)
+            REQUIREMENTS_DIR="tools/ci-deps"
+            REQUIREMENTS_SUFFIX="-py3"
+          ;;
+        esac
+
+        python -m pip install -U -r tools/${REQUIREMENTS_DIR}/requirements-infra${REQUIREMENTS_SUFFIX}.txt --require-hashes
+        python -m pip install    -r tools/${REQUIREMENTS_DIR}/requirements-wheel${REQUIREMENTS_SUFFIX}.txt --require-hashes
 
     - name: Cache [libs]
       uses: actions/cache@v3

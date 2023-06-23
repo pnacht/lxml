@@ -1,0 +1,2 @@
+coverage<5
+Cython>=3.0b2
