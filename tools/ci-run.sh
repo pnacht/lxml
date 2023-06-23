@@ -55,7 +55,7 @@ echo "Installing requirements [python]"
 
 REQUIREMENTS_COMMON_DIR="tools/ci-deps"
 case "$PYTHON_VERSION" in
-  *2.7)
+  2.7)
     REQUIREMENTS_VERSION_DIR="tools/ci-deps-eol"
     REQUIREMENTS_VERSION_SUFFIX="-py2"
   ;;
@@ -72,7 +72,7 @@ esac
 python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements-infra${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes
 python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements-wheel${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes
 if [ -z "${PYTHON_VERSION##*-dev}" ];
-  then CYTHON_COMPILE_MINIMAL=true python -m pip install -r ${REQUIREMENTS_COMMON_DIR}/requirements-cython3.txt --no-binary :all: --require-hashes 
+  then CYTHON_COMPILE_MINIMAL=true python -m pip install https://github.com/cython/cython/archive/master.zip
   else python -m pip install -r ${REQUIREMENTS_COMMON_DIR}/requirements-cython.txt --require-hashes
 fi
 python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes || exit 1
