@@ -1,3 +1,4 @@
+-r wheel.in
 beautifulsoup4
 cssselect
 html5lib

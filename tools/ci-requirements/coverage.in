@@ -1,0 +1,2 @@
+coverage<5
+-r tools/ci-requirements/cython3.in

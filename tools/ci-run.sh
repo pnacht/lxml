@@ -53,32 +53,32 @@ set -eo pipefail
 # Install python requirements
 echo "Installing requirements [python]"
 
-REQUIREMENTS_COMMON_DIR="tools/ci-deps"
+REQUIREMENTS_DIR="tools/ci-requirements"
 case "$PYTHON_VERSION" in
-  2.7)
-    REQUIREMENTS_VERSION_DIR="tools/ci-deps-eol"
-    REQUIREMENTS_VERSION_SUFFIX="-py2"
+  *2.7)
+    REQUIREMENTS_VERSION_DIR="${REQUIREMENTS_DIR}/py27"
   ;;
   3.6)
-    REQUIREMENTS_VERSION_DIR="tools/ci-deps-eol"
-    REQUIREMENTS_VERSION_SUFFIX="-py36"
+    REQUIREMENTS_VERSION_DIR="${REQUIREMENTS_DIR}/py36"
   ;;
   *)
-    REQUIREMENTS_VERSION_DIR="tools/ci-deps"
-    REQUIREMENTS_VERSION_SUFFIX="-py3"
+    REQUIREMENTS_VERSION_DIR=${REQUIREMENTS_DIR}
   ;;
 esac
 
-python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements-infra${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes
-python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements-wheel${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes
+python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements.txt --require-hashes || exit 1
+
 if [ -z "${PYTHON_VERSION##*-dev}" ];
-  then CYTHON_COMPILE_MINIMAL=true python -m pip install https://github.com/cython/cython/archive/master.zip
-  else python -m pip install -r ${REQUIREMENTS_COMMON_DIR}/requirements-cython.txt --require-hashes
+  then CYTHON_COMPILE_MINIMAL=true python -m pip install --pre -r ${REQUIREMENTS_DIR}/cython3.txt --require-hashes
+  else python -m pip install -r ${REQUIREMENTS_DIR}/cython.txt --require-hashes
 fi
-python -m pip install -U -r ${REQUIREMENTS_VERSION_DIR}/requirements${REQUIREMENTS_VERSION_SUFFIX}.txt --require-hashes || exit 1
-[ -n "${EXTRA_DEPS}" ] && python -m pip install -U -r ${REQUIREMENTS_COMMON_DIR}/requirements-docs.txt --require-hashes --no-deps
+
+if [ -n "${EXTRA_DEPS}" ]; then
+  python -m pip install -U -r ${REQUIREMENTS_DIR}/docs.txt --require-hashes --no-deps
+fi
+
 if [[ "$COVERAGE" == "true" ]]; then
-  python -m pip install -r ${REQUIREMENTS_COMMON_DIR}/requirements-coverage.txt --require-hashes || exit 1
+  python -m pip install -r ${REQUIREMENTS_DIR}/coverage.txt --require-hashes || exit 1
 fi
 
 # Build

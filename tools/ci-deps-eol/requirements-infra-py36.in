@@ -1,3 +1,0 @@
-# These files are "considered unsafe in a requirements file" because they might be installed via apt-get, etc
-pip==21.3.1
-setuptools==59.6.0
